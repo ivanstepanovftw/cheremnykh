@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(cheremnykh)
 
 find_package(Boost 1.45.0 REQUIRED COMPONENTS iostreams thread)
-
+find_package(Threads REQUIRED)
 
 #
 # unit1
@@ -49,7 +49,7 @@ target_compile_options(${TARGET} PUBLIC
         -g3 -ggdb3
         )
 target_link_libraries(${TARGET} PUBLIC
-        pthread
+        Threads::Threads
         Boost::boost
         Boost::thread
         )
@@ -70,14 +70,18 @@ target_compile_options(${TARGET} PUBLIC
 
 
 #
-# unit4
+# unit4 (IMPORTANT: library only)
 #
-#set(TARGET unit4_db_cache)
-#add_executable(${TARGET} unit4/db_cache.cpp)
-#set_target_properties(${TARGET} PROPERTIES
-#        CXX_STANDARD 20
-#        )
-#target_compile_options(${TARGET} PUBLIC
-#        -O3
-#        -g3 -ggdb3
-#        )
+set(TARGET unit4_db_cache)
+#add_executable(${TARGET} unit4/db_shared_cached.cpp)
+add_library(${TARGET} SHARED unit4/db_shared_cached.cpp)
+set_target_properties(${TARGET} PROPERTIES
+        CXX_STANDARD 20
+        )
+target_compile_options(${TARGET} PUBLIC
+        -O0
+        -g3 -ggdb3
+        )
+target_link_libraries(${TARGET} PUBLIC
+        Threads::Threads
+        )

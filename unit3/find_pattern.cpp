@@ -6,6 +6,7 @@
 #include <iostream>
 #include <tuple>
 
+
 /*!
  * find pattern in string based on mask. '?' symbol in 'mask' matches any character.
  */

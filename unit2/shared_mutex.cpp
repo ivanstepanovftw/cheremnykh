@@ -19,9 +19,6 @@
 #include "shared_mutex.hh"
 #include "nanocube.hh"
 
-
-
-
 template <class NANOCUBE>
 void reader_shared(NANOCUBE& n) {
     n.mutex.lock_shared();
@@ -53,11 +50,12 @@ void writer(NANOCUBE& n) {
 }
 
 void bench() {
-    constexpr size_t reader_threads = 100;
-    constexpr size_t writer_threads = 10;
+    constexpr size_t reader_threads = 10;
+    constexpr size_t writer_threads = 1;
 
     {
         std_shared_mutex::nanocube n;
+        // Необходимо выравнить количество времени затраченное на 1 читателя и 1 писателя
         {
             // Timer t1{"writer"};
             writer(n);
@@ -125,6 +123,24 @@ void bench() {
         std::vector<std::thread> threads;
         for (int i=0; i<reader_threads; i++) {
             threads.emplace_back(reader_shared<decltype(n)>, std::ref(n));
+        }
+        for (int i=0; i<writer_threads; i++) {
+            threads.emplace_back(writer<decltype(n)>, std::ref(n));
+        }
+
+        for (auto &th : threads) {
+            if (th.joinable())
+                th.join();
+        }
+    }
+    {
+        my_shared_mutex::nanocube n;
+        writer(n);
+
+        Timer t2{"my_shared_mutex_invalid_usage"};
+        std::vector<std::thread> threads;
+        for (int i=0; i<reader_threads; i++) {
+            threads.emplace_back(reader<decltype(n)>, std::ref(n));
         }
         for (int i=0; i<writer_threads; i++) {
             threads.emplace_back(writer<decltype(n)>, std::ref(n));
